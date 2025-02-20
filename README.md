@@ -1,12 +1,7 @@
 # HeartStrapAnalysis
 
-This repository is meant to a be a quick tool to test your ANT+ based heart strap and its communications. An ANT+ USB device picks up the communication signal from the heartstrap which, once put on a persons chest and activated, emits broadcast data at a frequency of about four times a second.
-<center>
-<figure>
-<img src="assets/strap_usb.jpeg" width=75%>
-<figcaption> Garmin HRM Pro strap and USB ANT+ device </figcaption>
-</figure>
-</center>
+This repository is meant to a be a quick tool to test your ANT+ based heart strap and its communication drop rate. An ANT+ USB device picks up the communication signal from the heartstrap which, once put on a persons chest and activated, emits broadcast data at a frequency of about four times a second.
+<center><img src="assets/strap_usb.jpeg" width=75%></center>
 
  Here we use the [openant](https://github.com/Tigge/openant/tree/master) python based library to assist in picking up the signals from the strap in the USB ANT+ device.
  
@@ -33,16 +28,6 @@ The lines are organized in groups of two by communication event from the strap. 
 We observe that for line `1311` and `1313` we have that `Skipped communications: 932` is static meaning that there was no skipped communication. However, for line `1315` it is now `Skipped communications: 933.` Furtheremore, the difference between `Running for X seconds` between `1311` and `1313` is `391.086 - 390.839 = 247` milliseconds which is the expected difference for a four times a second communication rate. However, between `1315` and `1313` it is `391.578 - 391.086 = 492` millseconds. which means there was a skip of communications from the strap which explains the jump by one in `Skipped communications: 933.`
 
 The `1593 expected communications` in `Running for 391.824 seconds with 1593 expected communications` is computed by the total run time of the experiment (`391.824`) divided by the expected frequency of communication which is every `246` milliseconds (`4.06Hz`). The expected communication number with respect to `Skipped communications: 933` allows us to compute that we have a `933/1593` skip rate which is about `59%` rate. `59%` of our packets are dropped.
-
-## Old battery vs New battery
-
-Running the experiment via `python3 script.py`, as explained in previous section, for an old battery after running the code for `594` seconds I obtained a skip rate of 58%:
-
-```
-2045: Running for 594.011 seconds with 2415 expected communications. Skipped communications: 1390. Recieved communications: 1023.
-```
-
-More than half of the packets being dropped is concerning as it could lead to missing out on the latest heart beat data right when it happens. This was the motivation behind this repository and purchasing a new battery and seeing if with a new battery we experience the same issue. When I connected the heart strap to my watch I was told that the battery status of the heart strap was OK, but the battery was a couple of years old (albeit used lightly).
  
  
 ## Script Setup and Run
