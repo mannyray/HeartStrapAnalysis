@@ -23,7 +23,7 @@ This repository is meant to a be a quick tool to test your ANT+ based heart stra
 1317: Running for 391.824 seconds with 1593 expected communications. Skipped communications: 933. Recieved communications: 659.
 ```
 
-The lines are organized in groups of two by communication event from the strap. Lines `1310` and `1311` are for `beat_count=250` while `1312`, `1313` and `1314`,`1315` are for `beat_count=251` and the last two lines are for `beat_count=251`. An identical beat count (as in the case of `beatcount=251`) means that the strap communicated the same data as there was no new heart beat so it just sends the same data at the rate of about four times a second.
+The lines are organized in groups of two by communication event from the strap. Lines `1310` and `1311` are for `beat_count=250` while `1312`, `1313` and `1314`,`1315` are for `beat_count=251` and the last two lines are for `beat_count=252`. An identical beat count (as in the case of `beatcount=251`) means that the strap communicated the same data as there was no new heart beat so it just sends the same data at the rate of about four times a second.
 
 We observe that for line `1311` and `1313` we have that `Skipped communications: 932` is static meaning that there was no skipped communication. However, for line `1315` it is now `Skipped communications: 933.` Furtheremore, the difference between `Running for X seconds` between `1311` and `1313` is `391.086 - 390.839 = 247` milliseconds which is the expected difference for a four times a second communication rate. However, between `1315` and `1313` it is `391.578 - 391.086 = 492` millseconds. which means there was a skip of communications from the strap which explains the jump by one in `Skipped communications: 933.`
 
