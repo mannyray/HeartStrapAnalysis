@@ -28,6 +28,34 @@ The lines are organized in groups of two by communication event from the strap. 
 We observe that for line `1311` and `1313` we have that `Skipped communications: 932` is static meaning that there was no skipped communication. However, for line `1315` it is now `Skipped communications: 933.` Furtheremore, the difference between `Running for X seconds` between `1311` and `1313` is `391.086 - 390.839 = 247` milliseconds which is the expected difference for a four times a second communication rate. However, between `1315` and `1313` it is `391.578 - 391.086 = 492` millseconds. which means there was a skip of communications from the strap which explains the jump by one in `Skipped communications: 933.`
 
 The `1593 expected communications` in `Running for 391.824 seconds with 1593 expected communications` is computed by the total run time of the experiment (`391.824`) divided by the expected frequency of communication which is every `246` milliseconds (`4.06Hz`). The expected communication number with respect to `Skipped communications: 933` allows us to compute that we have a `933/1593` skip rate which is about `59%` rate. `59%` of our packets are dropped.
+
+## Drop rate investigation
+
+I was confused by the drop rate. I ended up doing some investigation under an existing openat github library [issue](https://github.com/Tigge/openant/issues/111#issuecomment-2672828117). There I discovered that repeat events were not processed which explains the high drop rate. I made some modifications to the repository to allow for repeat events in my fork https://github.com/mannyray/openant and reran the experiment and got a lower drop rate of `105/800 = 12%`:
+
+```
+1387: Running for 196.766 seconds with 800 expected communications. Skipped communications: 105. Recieved communications: 694.
+```
+
+The modification in the repository was to allow duplicate events to come in ( see [here](https://github.com/mannyray/openant/commit/a19c1a5cd0153a9a02c11021186b4dd8b2b296cd)). In addition, I added a log `print("about to broadcast")`, and noticed that everytime `script.py` was outputting an increase of `Skipped communications`, I was double logging `about to broadcast` meaning that the data was correctly recieved by the ANT+ USB but the `script.py` did not recieve it:
+
+```
+about to broadcast
+110: HeartRateData(page_specific=13506816, beat_time=52.416015625, beat_count=109, heart_rate=68, operating_time=16777215, manufacturer_id_lsb=255, serial_number=65535, previous_heart_beat_time=51.5244140625, battery_percentage=255)
+111: Running for 16.003 seconds with 65 expected communications. Skipped communications: 10. Recieved communications: 56.
+
+about to broadcast
+about to broadcast
+112: HeartRateData(page_specific=13506816, beat_time=52.416015625, beat_count=109, heart_rate=68, operating_time=16777215, manufacturer_id_lsb=255, serial_number=65535, previous_heart_beat_time=51.5244140625, battery_percentage=255)
+113: Running for 16.496 seconds with 67 expected communications. Skipped communications: 11. Recieved communications: 57.
+
+about to broadcast
+114: HeartRateData(page_specific=13740544, beat_time=53.2783203125, beat_count=110, heart_rate=69, operating_time=16777215, manufacturer_id_lsb=255, serial_number=65535, previous_heart_beat_time=52.416015625, battery_percentage=255)
+115: Running for 16.742 seconds with 68 expected communications. Skipped communications: 11. Recieved communications: 58.
+
+```
+
+
  
  
 ## Script Setup and Run
@@ -37,10 +65,15 @@ Tested on a mac.
 ```
 mkdir env
 python3 -m venv env
-source env/bin/activate       
+source env/bin/activate     
 python3 -m pip install openant
 python3 -m pip install pyusb
 python3 -m pip install libusb
 brew install libusb
 python3 script.py
 ```
+
+If running https://github.com/mannyray/openant, then you will have to copy paste the `script.py` into the root of the cloned `openant` repository and not run `python3 -m pip install openant`
+
+
+env/lib/python3.13/site-packages/openant
