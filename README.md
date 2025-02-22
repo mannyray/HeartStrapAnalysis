@@ -55,8 +55,38 @@ about to broadcast
 
 ```
 
+To debug the double `about to broadcast`, I traced the code and ended up adding a line [here](https://github.com/mannyray/openant/commit/40a13adee1b467f1830e2647fc2afa6b4eccac51) where I noticed that certain page number 9 was being filtered out in the double `about to broadcast` case. I reran my script and got:
 
- 
+```
+about to broadcast
+The page is 4
+132: HeartRateData(page_specific=14791680, beat_time=57.380859375, beat_count=175, heart_rate=61, operating_time=16777215, manufacturer_id_lsb=255, serial_number=65535, previous_heart_beat_time=56.42578125, battery_percentage=255)
+133: Running for 16.744 seconds with 68 expected communications. Skipped communications: 2. Recieved communications: 67.
+
+about to broadcast
+The page is 9
+134: HeartRateData(page_specific=460882, beat_time=57.380859375, beat_count=175, heart_rate=61, operating_time=16777215, manufacturer_id_lsb=255, serial_number=65535, previous_heart_beat_time=56.42578125, battery_percentage=255)
+135: Running for 16.99 seconds with 69 expected communications. Skipped communications: 2. Recieved communications: 68.
+
+```
+
+Page 9 data is still able to be parsed according to the logs above so I don't think it is invalid which was I removed the `openant`'s previous restriction of keeping the page number or equal to 7. Based on `D00000693_-_ANT+_Device_Profile_-_Heart_Rate_Rev_2.1.pdf` ANT+ standard I am not sure what `9` represents as the pdf does not go past 7.
+
+I reran the script and still got some `Skipped communications`:
+
+```
+821: Running for 106.14 seconds with 431 expected communications. Skipped communications: 21. Recieved communications: 411.
+```
+
+To resolve the rest of the errors I put a log line in openant's code [here](https://github.com/Tigge/openant/blob/67e0225efd1cafd2a7b3bb5c52dd35382b97888c/openant/base/ant.py#L131) such that I log whenever I recieved no broadcast data from the strap:
+
+```python
+if ( message._id != Message.ID.BROADCAST_DATA ):
+    print("non broadcast "+str(message._id))
+```
+
+In parallel to the ANT USB+ reciever I used another reciever which is a Garmin watch and code from https://github.com/mannyray/ANTPlusHeartStrap/tree/master. I discovered that both the watch and python script using openant library experienced the exact same rate of drops and on the watch the issue was registered as a `MSG_CODE_EVENT_RX_FAIL` type event ( see https://developer.garmin.com/connect-iq/api-docs/Toybox/Ant.html). Testing with two different recievers led to me to the conclusion that there is at times an issue with the strap communicating and not the reciever code.
+
  
 ## Script Setup and Run
 
